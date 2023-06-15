@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	mc "github.com/krevetkou/yandex-project/internal/metrics-collector"
-	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -52,15 +51,9 @@ func PostMetrics(metricType, metricName, metricValue string) {
 
 	request.Header.Set("Content-Type", "text/plain")
 	resp, err := client.Do(request)
+
+	defer resp.Body.Close()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-
-		}
-	}(resp.Body)
-
 }
