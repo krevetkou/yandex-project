@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	mc "github.com/krevetkou/yandex-project/internal/metrics-collector"
 	"net/http"
 	"strconv"
 	"time"
-	mc "yandex-project/internal/metrics-collector"
 )
 
 const (
@@ -37,13 +37,6 @@ func main() {
 			PostMetrics(metricType, metricName, metricValue)
 		}
 	}
-
-	//requestDump, err := httputil.DumpRequest(request, true)
-	//if err != nil {
-	//	fmt.Println(err.Error())
-	//}
-	//fmt.Println(string(requestDump))
-
 }
 
 func PostMetrics(metricType, metricName, metricValue string) {
