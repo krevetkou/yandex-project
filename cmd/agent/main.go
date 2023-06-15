@@ -50,17 +50,17 @@ func PostMetrics(metricType, metricName, metricValue string) {
 		fmt.Println(err.Error())
 	}
 
+	request.Header.Set("Content-Type", "text/plain")
+	resp, err := client.Do(request)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
 
 		}
-	}(request.Body)
-
-	request.Header.Set("Content-Type", "text/plain")
-	_, err = client.Do(request)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	}(resp.Body)
 
 }
