@@ -14,7 +14,7 @@ const (
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/update/", handleRequest)
-	log.Println(fmt.Sprintf("Starting web server http://127.0.0.1:%s", port))
+	log.Printf("Starting web server http://127.0.0.1:%s", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), mux)
 	log.Fatal(err)
 }
