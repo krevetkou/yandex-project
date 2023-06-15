@@ -51,9 +51,9 @@ func PostMetrics(metricType, metricName, metricValue string) {
 
 	request.Header.Set("Content-Type", "text/plain")
 	resp, err := client.Do(request)
-
-	defer resp.Body.Close()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+
+	defer resp.Body.Close()
 }
