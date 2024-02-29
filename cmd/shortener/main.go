@@ -10,7 +10,7 @@ import (
 func main() {
 	shortener := api.NewURLShortener()
 
-	http.HandleFunc("/POST", shortener.HandleShorten)
+	http.HandleFunc("/", shortener.HandleShorten)
 	http.HandleFunc("/GET/", shortener.HandleRedirect)
 
 	fmt.Println("URL Shortener is running on :8080")
