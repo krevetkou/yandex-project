@@ -2,7 +2,9 @@ package api
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	services "github.com/krevetkou/yandex-project/internal/services"
 )
@@ -23,35 +25,37 @@ func (us *URLShortener) HandleShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	originalURL := r.FormValue("url")
-	if originalURL == "" {
+	originalURL, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "failed to read request body", http.StatusBadRequest)
+		return
+	}
+
+	if string(originalURL) == "" {
 		http.Error(w, "URL parameter is missing", http.StatusBadRequest)
 		return
 	}
 
 	// Generate a unique shortened key for the original URL
 	shortKey := services.GenerateShortKey()
-	us.urls[shortKey] = originalURL
+	us.urls[shortKey] = string(originalURL)
 
 	// Construct the full shortened URL
-	shortenedURL := fmt.Sprintf("http://localhost:8080/short/%s", shortKey)
+	shortenedURL := fmt.Sprintf("http://localhost:8080/GET/%s", shortKey)
 
 	// Render the HTML response with the shortened URL
 	w.Header().Set("Content-Type", "text/html")
-	responseHTML := fmt.Sprintf(`
-        <h2>URL Shortener</h2>
-        <p>Original URL: %s</p>
-        <p>Shortened URL: <a href="%s">%s</a></p>
-        <form method="post" action="/shorten">
-            <input type="text" name="url" placeholder="Enter a URL">
-            <input type="submit" value="Shorten">
-        </form>
-    `, originalURL, shortenedURL, shortenedURL)
-	fmt.Fprintf(w, responseHTML)
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprint(w, shortenedURL)
 }
 
 func (us *URLShortener) HandleRedirect(w http.ResponseWriter, r *http.Request) {
-	shortKey := r.URL.Path[len("/short/"):]
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	shortKey := strings.TrimPrefix(r.URL.Path, "/GET/")
 	if shortKey == "" {
 		http.Error(w, "Shortened key is missing", http.StatusBadRequest)
 		return
@@ -64,6 +68,8 @@ func (us *URLShortener) HandleRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Redirect the user to the original URL
-	http.Redirect(w, r, originalURL, http.StatusMovedPermanently)
+	fmt.Println(originalURL)
+
+	w.Header().Set("Location", originalURL)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
